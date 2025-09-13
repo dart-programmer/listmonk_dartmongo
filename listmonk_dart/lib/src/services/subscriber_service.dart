@@ -4,6 +4,7 @@ import '../models/subscriber.dart';
 import '../models/list.dart';
 import '../models/constants.dart';
 import '../core/listmonk_core.dart';
+import '../utils/validation.dart';
 
 /// Service for managing subscribers
 class SubscriberService {
@@ -125,6 +126,30 @@ class SubscriberService {
     bool preconfirm = false,
     bool assertOptin = false,
   }) async {
+    // Validate email format
+    if (!ValidationUtils.isValidEmail(subscriber.email)) {
+      throw ArgumentError('Invalid email format: ${subscriber.email}');
+    }
+
+    // Validate subscriber status
+    if (!ValidationUtils.isValidSubscriberStatus(subscriber.status)) {
+      throw ArgumentError('Invalid subscriber status: ${subscriber.status}');
+    }
+
+    // Validate JSON attributes
+    if (!ValidationUtils.isValidJsonAttributes(subscriber.attribs)) {
+      throw ArgumentError('Invalid subscriber attributes');
+    }
+
+    // Check if subscriber with this email already exists
+    final existingSubscriber = await _db.collection('subscribers').findOne({
+      'email': ValidationUtils.sanitizeEmail(subscriber.email),
+    });
+
+    if (existingSubscriber != null) {
+      throw Exception('Subscriber with email ${subscriber.email} already exists');
+    }
+
     final uuid = _uuid.v4();
     final now = DateTime.now();
     
@@ -134,6 +159,7 @@ class SubscriberService {
 
     final newSubscriber = subscriber.copyWith(
       uuid: uuid,
+      email: subscriber.email.toLowerCase().trim(),
       status: subscriber.status.isEmpty ? SubscriberStatus.enabled : subscriber.status,
       createdAt: now,
       updatedAt: now,
@@ -163,13 +189,23 @@ class SubscriberService {
 
   /// Update a subscriber
   Future<Subscriber> updateSubscriber(int id, Subscriber subscriber) async {
+    // Check if another subscriber with this email already exists
+    final existingSubscriber = await _db.collection('subscribers').findOne({
+      'email': subscriber.email.toLowerCase().trim(),
+      'id': {'\$ne': id}, // Exclude current subscriber
+    });
+
+    if (existingSubscriber != null) {
+      throw Exception('Another subscriber with email ${subscriber.email} already exists');
+    }
+
     final now = DateTime.now();
     
     await _db.collection('subscribers').updateOne(
       {'id': id},
       {
         '\$set': {
-          'email': subscriber.email,
+          'email': subscriber.email.toLowerCase().trim(),
           'name': subscriber.name.trim(),
           'status': subscriber.status,
           'attribs': subscriber.attribs,

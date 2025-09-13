@@ -23,3 +23,7 @@ export 'src/services/campaign_service.dart';
 export 'src/services/list_service.dart';
 export 'src/services/template_service.dart';
 export 'src/services/analytics_service.dart';
+export 'src/services/mailtrap_service.dart';
+
+// Utils
+export 'src/utils/validation.dart';

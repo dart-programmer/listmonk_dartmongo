@@ -5,6 +5,7 @@ import '../services/campaign_service.dart';
 import '../services/list_service.dart';
 import '../services/template_service.dart';
 import '../services/analytics_service.dart';
+import '../services/mailtrap_service.dart';
 
 /// Core Listmonk service that provides access to all functionality
 class ListmonkCore {
@@ -14,6 +15,7 @@ class ListmonkCore {
   final ListService _listService;
   final TemplateService _templateService;
   final AnalyticsService _analyticsService;
+  final MailtrapService? _mailtrapService;
 
   ListmonkCore._({
     required Db db,
@@ -22,17 +24,20 @@ class ListmonkCore {
     required ListService listService,
     required TemplateService templateService,
     required AnalyticsService analyticsService,
+    MailtrapService? mailtrapService,
   }) : _db = db,
        _subscriberService = subscriberService,
        _campaignService = campaignService,
        _listService = listService,
        _templateService = templateService,
-       _analyticsService = analyticsService;
+       _analyticsService = analyticsService,
+       _mailtrapService = mailtrapService;
 
   /// Factory constructor to create a new ListmonkCore instance
   static Future<ListmonkCore> create({
     required String mongoUri,
     String? databaseName,
+    MailtrapConfig? mailtrapConfig,
   }) async {
     final db = Db(mongoUri);
     await db.open();
@@ -46,6 +51,18 @@ class ListmonkCore {
     final listService = ListService(database);
     final templateService = TemplateService(database);
     final analyticsService = AnalyticsService(database);
+    
+    // Initialize Mailtrap service if config provided
+    MailtrapService? mailtrapService;
+    if (mailtrapConfig != null) {
+      mailtrapService = MailtrapService.mailtrap(
+        username: mailtrapConfig.username,
+        password: mailtrapConfig.password,
+        fromEmail: mailtrapConfig.fromEmail,
+        fromName: mailtrapConfig.fromName,
+        useTls: mailtrapConfig.useTls,
+      );
+    }
 
     return ListmonkCore._(
       db: db,
@@ -54,6 +71,7 @@ class ListmonkCore {
       listService: listService,
       templateService: templateService,
       analyticsService: analyticsService,
+      mailtrapService: mailtrapService,
     );
   }
 
@@ -71,6 +89,9 @@ class ListmonkCore {
 
   /// Get the analytics service
   AnalyticsService get analyticsService => _analyticsService;
+
+  /// Get the Mailtrap service
+  MailtrapService? get mailtrapService => _mailtrapService;
 
   /// Close the database connection
   Future<void> close() async {
@@ -109,5 +130,22 @@ class BounceAction {
   const BounceAction({
     required this.count,
     required this.action,
+  });
+}
+
+/// Mailtrap configuration
+class MailtrapConfig {
+  final String username;
+  final String password;
+  final String fromEmail;
+  final String? fromName;
+  final bool useTls;
+
+  const MailtrapConfig({
+    required this.username,
+    required this.password,
+    required this.fromEmail,
+    this.fromName,
+    this.useTls = true,
   });
 }
