@@ -1,6 +1,9 @@
 import 'package:mongo_dart/mongo_dart.dart';
 import '../models/constants.dart';
 import '../services/subscriber_service.dart';
+import '../services/readonly_subscriber_service.dart';
+import '../services/subscriber_service_facade.dart';
+import '../services/grpc_user_service.dart';
 import '../services/campaign_service.dart';
 import '../services/list_service.dart';
 import '../services/template_service.dart';
@@ -14,6 +17,8 @@ import '../utils/database_indexes.dart';
 class ListmonkCore {
   final Db _db;
   final SubscriberService _subscriberService;
+  final ReadOnlySubscriberService _readOnlySubscriberService;
+  final SubscriberServiceFacade? _subscriberServiceFacade;
   final CampaignService _campaignService;
   final ListService _listService;
   final TemplateService _templateService;
@@ -24,6 +29,8 @@ class ListmonkCore {
   ListmonkCore._({
     required Db db,
     required SubscriberService subscriberService,
+    required ReadOnlySubscriberService readOnlySubscriberService,
+    SubscriberServiceFacade? subscriberServiceFacade,
     required CampaignService campaignService,
     required ListService listService,
     required TemplateService templateService,
@@ -32,6 +39,8 @@ class ListmonkCore {
     required DatabaseIndexes databaseIndexes,
   }) : _db = db,
        _subscriberService = subscriberService,
+       _readOnlySubscriberService = readOnlySubscriberService,
+       _subscriberServiceFacade = subscriberServiceFacade,
        _campaignService = campaignService,
        _listService = listService,
        _templateService = templateService,
@@ -44,6 +53,7 @@ class ListmonkCore {
     required String mongoUri,
     String? databaseName,
     MailtrapConfig? mailtrapConfig,
+    GrpcConfig? grpcConfig,
   }) async {
     final db = Db(mongoUri);
     await db.open();
@@ -53,6 +63,7 @@ class ListmonkCore {
 
     // Initialize services
     final subscriberService = SubscriberService(database);
+    final readOnlySubscriberService = ReadOnlySubscriberService(database);
     final campaignService = CampaignService(database);
     final listService = ListService(database);
     final templateService = TemplateService(database);
@@ -70,6 +81,21 @@ class ListmonkCore {
       );
     }
 
+    // Initialize gRPC service if config provided
+    GrpcUserService? grpcService;
+    SubscriberServiceFacade? subscriberServiceFacade;
+    if (grpcConfig != null) {
+      grpcService = GrpcUserService.create(
+        host: grpcConfig.host,
+        port: grpcConfig.port,
+        useTls: grpcConfig.useTls,
+      );
+      subscriberServiceFacade = SubscriberServiceFacade(
+        readOnlyService: readOnlySubscriberService,
+        grpcService: grpcService,
+      );
+    }
+
     // Initialize database indexes
     final databaseIndexes = DatabaseIndexes(database);
 
@@ -83,6 +109,8 @@ class ListmonkCore {
     return ListmonkCore._(
       db: db,
       subscriberService: subscriberService,
+      readOnlySubscriberService: readOnlySubscriberService,
+      subscriberServiceFacade: subscriberServiceFacade,
       campaignService: campaignService,
       listService: listService,
       templateService: templateService,
@@ -92,8 +120,14 @@ class ListmonkCore {
     );
   }
 
-  /// Get the subscriber service
+  /// Get the subscriber service (legacy - use subscriberServiceFacade for new code)
   SubscriberService get subscriberService => _subscriberService;
+
+  /// Get the read-only subscriber service
+  ReadOnlySubscriberService get readOnlySubscriberService => _readOnlySubscriberService;
+
+  /// Get the subscriber service facade (recommended for new code)
+  SubscriberServiceFacade? get subscriberServiceFacade => _subscriberServiceFacade;
 
   /// Get the campaign service
   CampaignService get campaignService => _campaignService;
@@ -166,6 +200,19 @@ class MailtrapConfig {
     required this.password,
     required this.fromEmail,
     this.fromName,
+    this.useTls = true,
+  });
+}
+
+/// gRPC configuration
+class GrpcConfig {
+  final String host;
+  final int port;
+  final bool useTls;
+
+  const GrpcConfig({
+    required this.host,
+    required this.port,
     this.useTls = true,
   });
 }

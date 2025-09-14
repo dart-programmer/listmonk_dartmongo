@@ -19,6 +19,9 @@ export 'src/models/message.dart';
 
 // Services
 export 'src/services/subscriber_service.dart';
+export 'src/services/readonly_subscriber_service.dart';
+export 'src/services/subscriber_service_facade.dart';
+export 'src/services/grpc_user_service.dart';
 export 'src/services/campaign_service.dart';
 export 'src/services/list_service.dart';
 export 'src/services/template_service.dart';

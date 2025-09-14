@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package listmonk.user;
+
+option go_package = "github.com/your-org/listmonk_dartmongo/grpc/user";
+
+// User service for handling user updates via gRPC
+service UserService {
+  // Update subscriber status (enable, disable, blocklist)
+  rpc UpdateSubscriberStatus(UpdateSubscriberStatusRequest) returns (UpdateSubscriberStatusResponse);
+  
+  // Handle opt-out requests
+  rpc OptOut(OptOutRequest) returns (OptOutResponse);
+  
+  // Handle opt-in confirmations
+  rpc OptIn(OptInRequest) returns (OptInResponse);
+  
+  // Update subscriber attributes
+  rpc UpdateSubscriberAttributes(UpdateSubscriberAttributesRequest) returns (UpdateSubscriberAttributesResponse);
+  
+  // Update subscriber list subscriptions
+  rpc UpdateSubscriberSubscriptions(UpdateSubscriberSubscriptionsRequest) returns (UpdateSubscriberSubscriptionsResponse);
+  
+  // Delete subscriber
+  rpc DeleteSubscriber(DeleteSubscriberRequest) returns (DeleteSubscriberResponse);
+  
+  // Bulk operations
+  rpc BulkUpdateSubscriberStatus(BulkUpdateSubscriberStatusRequest) returns (BulkUpdateSubscriberStatusResponse);
+  rpc BulkOptOut(BulkOptOutRequest) returns (BulkOptOutResponse);
+}
+
+// Update subscriber status request
+message UpdateSubscriberStatusRequest {
+  string subscriber_uuid = 1;
+  string status = 2; // enabled, disabled, blocklisted
+  string reason = 3; // Optional reason for the change
+}
+
+message UpdateSubscriberStatusResponse {
+  bool success = 1;
+  string message = 2;
+  string subscriber_uuid = 3;
+}
+
+// Opt-out request
+message OptOutRequest {
+  string subscriber_uuid = 1;
+  repeated string list_uuids = 2; // Specific lists to opt out from, empty means all lists
+  string reason = 3; // Optional reason for opt-out
+  bool blocklist = 4; // Whether to blocklist the subscriber
+}
+
+message OptOutResponse {
+  bool success = 1;
+  string message = 2;
+  string subscriber_uuid = 3;
+  repeated string opted_out_lists = 4;
+}
+
+// Opt-in request
+message OptInRequest {
+  string subscriber_uuid = 1;
+  repeated string list_uuids = 2; // Lists to opt in to
+  map<string, string> meta = 3; // Optional metadata
+}
+
+message OptInResponse {
+  bool success = 1;
+  string message = 2;
+  string subscriber_uuid = 3;
+  repeated string opted_in_lists = 4;
+}
+
+// Update subscriber attributes request
+message UpdateSubscriberAttributesRequest {
+  string subscriber_uuid = 1;
+  map<string, string> attributes = 2;
+}
+
+message UpdateSubscriberAttributesResponse {
+  bool success = 1;
+  string message = 2;
+  string subscriber_uuid = 3;
+}
+
+// Update subscriber subscriptions request
+message UpdateSubscriberSubscriptionsRequest {
+  string subscriber_uuid = 1;
+  repeated string list_uuids = 2;
+  string subscription_status = 3; // confirmed, unconfirmed, unsubscribed
+  bool delete_existing = 4; // Whether to delete existing subscriptions first
+}
+
+message UpdateSubscriberSubscriptionsResponse {
+  bool success = 1;
+  string message = 2;
+  string subscriber_uuid = 3;
+  repeated string updated_lists = 4;
+}
+
+// Delete subscriber request
+message DeleteSubscriberRequest {
+  string subscriber_uuid = 1;
+  string reason = 2; // Optional reason for deletion
+}
+
+message DeleteSubscriberResponse {
+  bool success = 1;
+  string message = 2;
+  string subscriber_uuid = 3;
+}
+
+// Bulk update subscriber status request
+message BulkUpdateSubscriberStatusRequest {
+  repeated string subscriber_uuids = 1;
+  string status = 2;
+  string reason = 3;
+}
+
+message BulkUpdateSubscriberStatusResponse {
+  bool success = 1;
+  string message = 2;
+  int32 updated_count = 3;
+  repeated string failed_uuids = 4;
+}
+
+// Bulk opt-out request
+message BulkOptOutRequest {
+  repeated string subscriber_uuids = 1;
+  repeated string list_uuids = 2;
+  string reason = 3;
+  bool blocklist = 4;
+}
+
+message BulkOptOutResponse {
+  bool success = 1;
+  string message = 2;
+  int32 updated_count = 3;
+  repeated string failed_uuids = 4;
+}
