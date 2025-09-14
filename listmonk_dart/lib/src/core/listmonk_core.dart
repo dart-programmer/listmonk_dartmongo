@@ -6,6 +6,9 @@ import '../services/list_service.dart';
 import '../services/template_service.dart';
 import '../services/analytics_service.dart';
 import '../services/mailtrap_service.dart';
+import '../utils/logger.dart';
+import '../utils/performance.dart';
+import '../utils/database_indexes.dart';
 
 /// Core Listmonk service that provides access to all functionality
 class ListmonkCore {
@@ -16,6 +19,7 @@ class ListmonkCore {
   final TemplateService _templateService;
   final AnalyticsService _analyticsService;
   final MailtrapService? _mailtrapService;
+  final DatabaseIndexes _databaseIndexes;
 
   ListmonkCore._({
     required Db db,
@@ -25,13 +29,15 @@ class ListmonkCore {
     required TemplateService templateService,
     required AnalyticsService analyticsService,
     MailtrapService? mailtrapService,
+    required DatabaseIndexes databaseIndexes,
   }) : _db = db,
        _subscriberService = subscriberService,
        _campaignService = campaignService,
        _listService = listService,
        _templateService = templateService,
        _analyticsService = analyticsService,
-       _mailtrapService = mailtrapService;
+       _mailtrapService = mailtrapService,
+       _databaseIndexes = databaseIndexes;
 
   /// Factory constructor to create a new ListmonkCore instance
   static Future<ListmonkCore> create({
@@ -64,6 +70,16 @@ class ListmonkCore {
       );
     }
 
+    // Initialize database indexes
+    final databaseIndexes = DatabaseIndexes(database);
+
+    // Create indexes for optimal performance
+    await PerformanceMonitor.measureAsync('create_database_indexes', () async {
+      await databaseIndexes.createAllIndexes();
+    });
+
+    Logger.info('ListmonkCore initialized successfully');
+
     return ListmonkCore._(
       db: db,
       subscriberService: subscriberService,
@@ -72,6 +88,7 @@ class ListmonkCore {
       templateService: templateService,
       analyticsService: analyticsService,
       mailtrapService: mailtrapService,
+      databaseIndexes: databaseIndexes,
     );
   }
 
@@ -92,6 +109,9 @@ class ListmonkCore {
 
   /// Get the Mailtrap service
   MailtrapService? get mailtrapService => _mailtrapService;
+
+  /// Get the database indexes utility
+  DatabaseIndexes get databaseIndexes => _databaseIndexes;
 
   /// Close the database connection
   Future<void> close() async {

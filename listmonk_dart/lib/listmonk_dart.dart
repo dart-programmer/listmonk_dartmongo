@@ -27,3 +27,9 @@ export 'src/services/mailtrap_service.dart';
 
 // Utils
 export 'src/utils/validation.dart';
+export 'src/utils/logger.dart';
+export 'src/utils/performance.dart';
+export 'src/utils/database_indexes.dart';
+
+// Exceptions
+export 'src/exceptions/listmonk_exceptions.dart';

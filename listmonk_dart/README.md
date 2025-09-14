@@ -4,12 +4,17 @@ A Dart package providing core listmonk functionality for subscriber and campaign
 
 ## Features
 
-- **Subscriber Management**: Create, update, delete, and query subscribers
-- **Campaign Management**: Create, schedule, and manage email campaigns
+- **Subscriber Management**: Create, update, delete, and query subscribers with duplicate prevention
+- **Campaign Management**: Create, schedule, and manage email campaigns with status validation
 - **List Management**: Manage mailing lists with opt-in/opt-out functionality
-- **Template Management**: Handle email templates
-- **Analytics**: Track campaign views, clicks, and bounces
-- **MongoDB Integration**: Built for MongoDB instead of PostgreSQL
+- **Template Management**: Handle email templates with dynamic content processing
+- **Analytics**: Track campaign views, clicks, and bounces with comprehensive reporting
+- **MongoDB Integration**: Built for MongoDB with optimized indexes and queries
+- **Mailtrap SMTP Integration**: Complete email sending capabilities via Mailtrap
+- **Comprehensive Validation**: Input validation with detailed error messages
+- **Performance Monitoring**: Built-in performance tracking and optimization
+- **Robust Error Handling**: Custom exceptions with proper error codes
+- **Logging**: Comprehensive logging for debugging and monitoring
 
 ## Core Components
 
@@ -21,11 +26,23 @@ A Dart package providing core listmonk functionality for subscriber and campaign
 - `Bounce`: Bounce tracking and management
 
 ### Services
-- `SubscriberService`: CRUD operations for subscribers
-- `CampaignService`: Campaign management and sending
-- `ListService`: List management operations
-- `TemplateService`: Template management
-- `AnalyticsService`: Campaign analytics and tracking
+- `SubscriberService`: CRUD operations for subscribers with validation
+- `CampaignService`: Campaign management and sending with status validation
+- `ListService`: List management operations with proper indexing
+- `TemplateService`: Template management with dynamic content processing
+- `AnalyticsService`: Campaign analytics and tracking with performance optimization
+- `MailtrapService`: Complete SMTP integration for email sending
+
+### Utilities
+- `ValidationUtils`: Comprehensive input validation with detailed error messages
+- `Logger`: Structured logging for debugging and monitoring
+- `PerformanceMonitor`: Performance tracking and optimization
+- `DatabaseIndexes`: Automatic database indexing for optimal performance
+
+### Exceptions
+- Custom exception hierarchy with proper error codes
+- Detailed error messages for better debugging
+- Specific exceptions for different types of errors
 
 ## Usage
 

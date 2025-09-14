@@ -5,6 +5,7 @@ import '../models/list.dart';
 import '../models/constants.dart';
 import '../core/listmonk_core.dart';
 import '../utils/validation.dart';
+import '../exceptions/listmonk_exceptions.dart';
 
 /// Service for managing subscribers
 class SubscriberService {
@@ -127,18 +128,16 @@ class SubscriberService {
     bool assertOptin = false,
   }) async {
     // Validate email format
-    if (!ValidationUtils.isValidEmail(subscriber.email)) {
-      throw ArgumentError('Invalid email format: ${subscriber.email}');
-    }
+    ValidationUtils.validateEmail(subscriber.email);
 
     // Validate subscriber status
     if (!ValidationUtils.isValidSubscriberStatus(subscriber.status)) {
-      throw ArgumentError('Invalid subscriber status: ${subscriber.status}');
+      throw ValidationException('Invalid subscriber status: ${subscriber.status}', code: 'INVALID_STATUS');
     }
 
     // Validate JSON attributes
     if (!ValidationUtils.isValidJsonAttributes(subscriber.attribs)) {
-      throw ArgumentError('Invalid subscriber attributes');
+      throw ValidationException('Invalid subscriber attributes', code: 'INVALID_ATTRIBUTES');
     }
 
     // Check if subscriber with this email already exists
@@ -147,7 +146,7 @@ class SubscriberService {
     });
 
     if (existingSubscriber != null) {
-      throw Exception('Subscriber with email ${subscriber.email} already exists');
+      throw DuplicateException('Subscriber with email ${subscriber.email} already exists', code: 'EMAIL_EXISTS');
     }
 
     final uuid = _uuid.v4();

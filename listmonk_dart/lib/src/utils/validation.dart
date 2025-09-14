@@ -1,3 +1,5 @@
+import '../exceptions/listmonk_exceptions.dart';
+
 /// Validation utilities for the Listmonk Dart package
 class ValidationUtils {
   /// Email validation regex
@@ -9,6 +11,16 @@ class ValidationUtils {
   static bool isValidEmail(String email) {
     if (email.isEmpty) return false;
     return _emailRegex.hasMatch(email.trim());
+  }
+
+  /// Validate email format and throw exception if invalid
+  static void validateEmail(String email) {
+    if (email.isEmpty) {
+      throw ValidationException('Email cannot be empty', code: 'EMAIL_EMPTY');
+    }
+    if (!_emailRegex.hasMatch(email.trim())) {
+      throw ValidationException('Invalid email format: $email', code: 'EMAIL_INVALID');
+    }
   }
 
   /// Validate UUID format
