@@ -16,12 +16,14 @@ export 'src/models/campaign.dart';
 export 'src/models/template.dart';
 export 'src/models/bounce.dart';
 export 'src/models/message.dart';
+export 'src/models/email_recipient.dart';
 
 // Services
 export 'src/services/subscriber_service.dart';
 export 'src/services/readonly_subscriber_service.dart';
 export 'src/services/subscriber_service_facade.dart';
 export 'src/services/grpc_user_service.dart';
+export 'src/services/unified_email_service.dart';
 export 'src/services/campaign_service.dart';
 export 'src/services/list_service.dart';
 export 'src/services/template_service.dart';

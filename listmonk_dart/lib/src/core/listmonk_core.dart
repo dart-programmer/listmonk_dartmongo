@@ -4,6 +4,7 @@ import '../services/subscriber_service.dart';
 import '../services/readonly_subscriber_service.dart';
 import '../services/subscriber_service_facade.dart';
 import '../services/grpc_user_service.dart';
+import '../services/unified_email_service.dart';
 import '../services/campaign_service.dart';
 import '../services/list_service.dart';
 import '../services/template_service.dart';
@@ -19,6 +20,7 @@ class ListmonkCore {
   final SubscriberService _subscriberService;
   final ReadOnlySubscriberService _readOnlySubscriberService;
   final SubscriberServiceFacade? _subscriberServiceFacade;
+  final UnifiedEmailService _unifiedEmailService;
   final CampaignService _campaignService;
   final ListService _listService;
   final TemplateService _templateService;
@@ -31,6 +33,7 @@ class ListmonkCore {
     required SubscriberService subscriberService,
     required ReadOnlySubscriberService readOnlySubscriberService,
     SubscriberServiceFacade? subscriberServiceFacade,
+    required UnifiedEmailService unifiedEmailService,
     required CampaignService campaignService,
     required ListService listService,
     required TemplateService templateService,
@@ -41,6 +44,7 @@ class ListmonkCore {
        _subscriberService = subscriberService,
        _readOnlySubscriberService = readOnlySubscriberService,
        _subscriberServiceFacade = subscriberServiceFacade,
+       _unifiedEmailService = unifiedEmailService,
        _campaignService = campaignService,
        _listService = listService,
        _templateService = templateService,
@@ -64,6 +68,7 @@ class ListmonkCore {
     // Initialize services
     final subscriberService = SubscriberService(database);
     final readOnlySubscriberService = ReadOnlySubscriberService(database);
+    final unifiedEmailService = UnifiedEmailService(database);
     final campaignService = CampaignService(database);
     final listService = ListService(database);
     final templateService = TemplateService(database);
@@ -111,6 +116,7 @@ class ListmonkCore {
       subscriberService: subscriberService,
       readOnlySubscriberService: readOnlySubscriberService,
       subscriberServiceFacade: subscriberServiceFacade,
+      unifiedEmailService: unifiedEmailService,
       campaignService: campaignService,
       listService: listService,
       templateService: templateService,
@@ -128,6 +134,9 @@ class ListmonkCore {
 
   /// Get the subscriber service facade (recommended for new code)
   SubscriberServiceFacade? get subscriberServiceFacade => _subscriberServiceFacade;
+
+  /// Get the unified email service (reads from both users and subscribers)
+  UnifiedEmailService get unifiedEmailService => _unifiedEmailService;
 
   /// Get the campaign service
   CampaignService get campaignService => _campaignService;

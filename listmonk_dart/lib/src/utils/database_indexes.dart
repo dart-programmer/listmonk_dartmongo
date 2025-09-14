@@ -18,6 +18,7 @@ class DatabaseIndexes {
     await _createBounceIndexes();
     await _createAnalyticsIndexes();
     await _createSubscriptionIndexes();
+    await _createUserIndexes();
     
     Logger.info('Database indexes created successfully');
   }
@@ -196,11 +197,68 @@ class DatabaseIndexes {
     Logger.db('Created unique compound index on subscriptions.subscriber_uuid and list_uuid');
   }
 
+  /// Create user collection indexes
+  Future<void> _createUserIndexes() async {
+    final collection = _db.collection('users');
+    
+    // Unique email index
+    await collection.createIndex({'email': 1}, unique: true);
+    Logger.db('Created unique index on users.email');
+    
+    // UUID index
+    await collection.createIndex({'uuid': 1}, unique: true);
+    Logger.db('Created unique index on users.uuid');
+    
+    // Status index
+    await collection.createIndex({'status': 1});
+    Logger.db('Created index on users.status');
+    
+    // Is active index
+    await collection.createIndex({'isActive': 1});
+    Logger.db('Created index on users.isActive');
+    
+    // Created at index
+    await collection.createIndex({'createdAt': 1});
+    Logger.db('Created index on users.createdAt');
+    
+    // Updated at index
+    await collection.createIndex({'updatedAt': 1});
+    Logger.db('Created index on users.updatedAt');
+    
+    // Last login at index
+    await collection.createIndex({'lastLoginAt': 1});
+    Logger.db('Created index on users.lastLoginAt');
+    
+    // Name index for text search
+    await collection.createIndex({'name': 1});
+    Logger.db('Created index on users.name');
+    
+    // Display name index for text search
+    await collection.createIndex({'displayName': 1});
+    Logger.db('Created index on users.displayName');
+    
+    // Compound index for status and created at
+    await collection.createIndex({'status': 1, 'createdAt': -1});
+    Logger.db('Created compound index on users.status and createdAt');
+    
+    // Compound index for isActive and lastLoginAt
+    await collection.createIndex({'isActive': 1, 'lastLoginAt': -1});
+    Logger.db('Created compound index on users.isActive and lastLoginAt');
+    
+    // Text index for search
+    await collection.createIndex({
+      'email': 'text',
+      'name': 'text',
+      'displayName': 'text'
+    });
+    Logger.db('Created text index on users for search');
+  }
+
   /// Drop all indexes (use with caution)
   Future<void> dropAllIndexes() async {
     Logger.warning('Dropping all database indexes...');
     
-    final collections = ['subscribers', 'campaigns', 'lists', 'templates', 'bounces', 'campaign_views', 'link_clicks', 'subscriptions'];
+    final collections = ['subscribers', 'campaigns', 'lists', 'templates', 'bounces', 'campaign_views', 'link_clicks', 'subscriptions', 'users'];
     
     for (final collectionName in collections) {
       try {
